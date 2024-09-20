@@ -34,12 +34,12 @@ async function main() {
   })
 
   //Endpoint Read By ID [GET]/personagem/:id
-  app.get('/personagem/:id', function (req, res) {
+  app.get('/personagem/:id', async function (req, res) {
     //acessamos o parametro de rota id
     const id = req.params.id
 
     //acessar o item da lista usando o ID - 1
-    const item = lista[id - 1]
+    const item = await collection.findOne({ _id: new ObjectId(id)})
 
     //checamos se o item obtido é existente
     if (!item) {

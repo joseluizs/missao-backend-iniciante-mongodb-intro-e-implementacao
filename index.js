@@ -1,19 +1,36 @@
 const express = require('express')
-const app = express()
+const { MongoClient, ObjectId } = require('mongodb')
 
-app.get('/', function (req, res) {
-  res.send('Hello World!')
-})
+//Preparamos as informações de acesso ao banco de dados
+const dbUrl = 'mongodb+srv://admin:6LC5yrm08fIhewO3@cluster0.2je23.mongodb.net'
+const dbName = 'mongodb-intro-e-implementacao'
 
-const lista = ['Java', 'Kotlin', 'Android']
+//Declaramos a função main
+async function main() {
+  //Realizamos a conexão com o banco de dados
+  const client = new MongoClient(dbUrl)
+  console.log('Conectando ao banco de dados....')
+  await client.connect()
+  console.log('Banco de dados conectado com sucesso!')
 
-//Endpoint Read all [GET] /personagem 
-app.get('/personagem', function (req, res){
+  const db = client.db(dbName)
+  const collection = db.collection('personagem')
+
+  const app = express()
+
+  app.get('/', function (req, res) {
+    res.send('Hello World!')
+  })
+
+  const lista = ['Java', 'Kotlin', 'Android']
+
+  //Endpoint Read all [GET] /personagem 
+  app.get('/personagem', function (req, res) {
     res.send(lista.filter(Boolean))
-})
+  })
 
-//Endpoint Read By ID [GET]/personagem/:id
-app.get('/personagem/:id', function (req, res){
+  //Endpoint Read By ID [GET]/personagem/:id
+  app.get('/personagem/:id', function (req, res) {
     //acessamos o parametro de rota id
     const id = req.params.id
 
@@ -22,32 +39,32 @@ app.get('/personagem/:id', function (req, res){
 
     //checamos se o item obtido é existente
     if (!item) {
-        return res.status(404).send('Item não encontrado!')
+      return res.status(404).send('Item não encontrado!')
     }
     //Enviamos o item como resposta
     res.send(item)
-})
+  })
 
-//Sinalizar para Express q estou usando JSON no body
-app.use(express.json())
+  //Sinalizar para Express q estou usando JSON no body
+  app.use(express.json())
 
-//Endpoint Create [POST]/personagem
-app.post('/personagem', function (req, res) {
+  //Endpoint Create [POST]/personagem
+  app.post('/personagem', function (req, res) {
     //acessamos o body da requisição
     const body = req.body
 
     //acessamos a propiedade nome do body
     const novoItem = body.nome
-    
+
     //testar se o nome esta presento no body
-    if (!novoItem){
-        return res.status(400).send('Corpo da requisição deve conter a propriedade ´nome´.')
+    if (!novoItem) {
+      return res.status(400).send('Corpo da requisição deve conter a propriedade ´nome´.')
     }
- 
+
 
     //testar se tem item duplicado
-    if (lista.includes(novoItem)){
-        return res.status(409).send('Já existe este item na lista.')
+    if (lista.includes(novoItem)) {
+      return res.status(409).send('Já existe este item na lista.')
     }
 
     //adicionar na lista
@@ -55,51 +72,51 @@ app.post('/personagem', function (req, res) {
 
     //exibir uma msg de sucesso
     res.status(201).send('Item adicionado com sucesso!' + novoItem)
-} )
+  })
 
-//Endpoint Update [PUT]/personagem/:id
-app.put('/personagem/:id', function (req, res){
+  //Endpoint Update [PUT]/personagem/:id
+  app.put('/personagem/:id', function (req, res) {
     //acessamos o ID dos parametros da rota
     const id = req.params.id
 
     //checar pra ver se o ID - 1 esta na lista
     //exibir uma msg caso não esteja
     if (!lista[id - 1]) {
-        return res.status(404).send('Item não encontrado!')
+      return res.status(404).send('Item não encontrado!')
     }
 
     //acessamos o body da requisição
     const body = req.body
-    
+
     //acessamos a propriedade 'nome' do body
     const novoItem = body.nome
 
-     //checar se o nome esta presente no body
-     if (!novoItem){
-        return res.status(400).send('Corpo da requisição deve conter a propriedade ´nome´.')
-    } 
+    //checar se o nome esta presente no body
+    if (!novoItem) {
+      return res.status(400).send('Corpo da requisição deve conter a propriedade ´nome´.')
+    }
 
     //checar se tem item duplicado
-    if (lista.includes(novoItem)){
-        return res.status(409).send('Já existe este item na lista.')
+    if (lista.includes(novoItem)) {
+      return res.status(409).send('Já existe este item na lista.')
     }
-    
+
     //atualizamos na lista o novoItem pelo ID - 1
     lista[id - 1] = novoItem
 
     //enviamos uma resposta de sucesso
-    res.send('Item atualizado com sucesso! : ' +id+ '-' + novoItem)
-})
+    res.send('Item atualizado com sucesso! : ' + id + '-' + novoItem)
+  })
 
-//Endpoint Delete [DELETE]/personagem/:id
-app.delete('/personagem/:id', function (req, res){
+  //Endpoint Delete [DELETE]/personagem/:id
+  app.delete('/personagem/:id', function (req, res) {
     //acessamos o parametro de rota
-    const id =  req.params.id
+    const id = req.params.id
 
     //checar pra ver se o ID - 1 esta na lista
     //exibir uma msg caso não esteja
     if (!lista[id - 1]) {
-        return res.status(404).send('Item não encontrado!')
+      return res.status(404).send('Item não encontrado!')
     }
 
     //remover o item da lista usando o id - 1
@@ -107,6 +124,10 @@ app.delete('/personagem/:id', function (req, res){
 
     //Enviamos uma msg sucesso
     res.send('Item deletado com sucesso! ' + id)
-})
+  })
 
-app.listen(3000)
+  app.listen(3000)
+}
+
+//Executamos a função main
+main()
